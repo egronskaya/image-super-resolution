@@ -1,6 +1,7 @@
 from time import time
 
 import imageio
+import cv2
 import yaml
 import numpy as np
 from pathlib import Path
@@ -103,11 +104,15 @@ class Predictor:
             imageio.imwrite(output_path, sr_img)
 
     def _forward_pass(self, file_path , custom_scaling=True):
-        #custom scaling : boolean , True for landsat scaling 
+        #custom scaling : boolean , True for landsat scaling
         if custom_scaling:
             lr_img = ((imageio.imread(file_path).astype(int)*0.0000275-0.2)*255*4).astype(int)
             lr_img[lr_img>255] = 255
             lr_img[lr_img<0] = 0
+
+            dims = (265, 265) #TODO change to size later
+            lr_img = cv2.resize(lr_img.astype('float32'), dims, interpolation= cv2.INTER_CUBIC)
+            lr_img = lr_img.astype(int)
         else:
             lr_img = imageio.imread(file_path)
         if lr_img.shape[2] == 3:
